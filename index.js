@@ -1,6 +1,6 @@
 require('dotenv').config();
 const express = require('express');
-const { dbConnect } = require('./config/database');
+const { dbConnect } = require('./config/Database');
 const { appConfig } = require('./config/AppConfig');
 
 const startServer = async () => {
