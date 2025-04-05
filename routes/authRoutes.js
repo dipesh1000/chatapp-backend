@@ -10,6 +10,9 @@ const {
   logoutController,
   sendOtpController,
   verifyOtpController,
+  refreshTokenController,
+  updateProfileController,
+  updateUserProfileByIdController,
 } = require('../controllers/authController');
 const {
   validateRegistrationRules,
@@ -27,10 +30,22 @@ router.get('/users', authenticatedRoutes, authorize('admin'), getAllUser);
 // To get the user profile
 router.get('/user', authenticatedRoutes, getUserByIdController);
 
+// Update USer
+router.post(
+  '/update-user',
+  authenticatedRoutes,
+  authorize('admin'),
+  updateUserProfileByIdController
+);
+
+// Update USer
+router.post('/user/profile', authenticatedRoutes, updateProfileController);
+
 // Register API
 router.post('/register', validateRegistrationRules, registerController);
 
 // Register API
+
 router.post('/login', loginLimiter, loginController);
 
 // Eamil Verication API
@@ -49,5 +64,8 @@ router.post('/get-phone-otp', sendOtpController);
 router.post('/verify-phone', verifyOtpController);
 
 router.post('/logout', authenticatedRoutes, logoutController);
+
+// this IS ADDED LATER
+router.post('/refresh-token', refreshTokenController);
 
 module.exports = router;

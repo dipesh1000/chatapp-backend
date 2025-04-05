@@ -95,6 +95,7 @@ exports.registerController = async (req, res, next) => {
     res.status(201).json({
       error: false,
       data: updatedData,
+      message: 'User Register Successfully',
     });
   } catch (error) {
     next(error);
@@ -128,11 +129,16 @@ exports.loginController = async (req, res, next) => {
     res.cookie('accessToken', token, {
       httpOnly: true,
       secure: false,
+      expiresIn: new Date(new Date().getTime() + 15 * 60 * 1000),
+      sameSite: 'Lax',
+      maxAge: 60 * 2,
     });
 
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
       secure: false,
+      sameSite: 'Lax',
+      maxAge: 60 * 2,
     });
 
     res.status(201).json({
@@ -140,6 +146,80 @@ exports.loginController = async (req, res, next) => {
       data: updatedData,
       accessToken: token,
       refreshToken: refreshToken,
+      message: 'Login Success',
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.updateUserProfileByIdController = async (req, res, next) => {
+  // data sanitization aginst site script XSS and validate
+  await isFieldErrorFree(req, res);
+  const { username, phone, role, _id } = req.body;
+  try {
+    // Service Function to find data from email or username
+    const userExist = await findUser({ id: _id });
+    if (!userExist) {
+      throw new ErrorHandler(
+        'User With Email or Username Not already exist',
+        400
+      );
+    }
+    // Store User
+    const savedData = await createUserOrUpdate(
+      {
+        username,
+        phone,
+        role,
+      },
+      userExist
+    );
+
+    res.status(201).json({
+      error: false,
+      data: savedData,
+      message: 'User Update Successfully',
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.updateProfileController = async (req, res, next) => {
+  // data sanitization aginst site script XSS and validate
+  await isFieldErrorFree(req, res);
+  const userId = req.user.id;
+  const { username, email, phone, password, isPassword } = req.body;
+  try {
+    // Service Function to find data from email or username
+    const userExist = await findUser({ id: userId });
+    if (!userExist) {
+      throw new ErrorHandler(
+        'User With Email or Username Not already exist',
+        400
+      );
+    }
+    let hashedPassword;
+    if (isPassword) {
+      hashedPassword = await hashPassword(password);
+    }
+
+    // Store User
+    const savedData = await createUserOrUpdate(
+      isPassword
+        ? { password: hashedPassword }
+        : {
+            username,
+            phone,
+          },
+      userExist
+    );
+
+    res.status(201).json({
+      error: false,
+      data: savedData,
+      message: 'User Update Successfully',
     });
   } catch (error) {
     next(error);
@@ -155,8 +235,12 @@ exports.refreshTokenController = async (req, res, next) => {
   }
 
   try {
+    //changed
     // verify the incoming refresh token requred token and secret key
-    const { err, decoded } = await generateDecodedToken(refreshToken, 'secret');
+    const { err, decoded } = await generateDecodedToken(
+      refreshToken,
+      'LOGIN_SECRET'
+    );
 
     if (Boolean(err)) {
       throw new ErrorHandler('Invalid Token', 401);
@@ -176,23 +260,27 @@ exports.refreshTokenController = async (req, res, next) => {
       throw new ErrorHandler('Refresh Token is not valid', 401);
     }
 
-    const { token: accessToken } = await generateTokens(user);
+    // changed
+    const { token: accessToken } = await generateTokens(user, 'LOGIN_SECRET');
 
     // set options
-    let cookieOptions = {
+    const options = {
       httpOnly: true,
-      secure: true,
+      secure: false,
+      // sameSite: 'Lax',
     };
+
     // clear existing cookie
-    res.clearCookie('accessToken', cookieOptions);
+    // res.clearCookie('accessToken', options);
 
     // set the new tokens in cookies
-    res
-      .status(200)
-      .cookie('accessToken', accessToken, cookieOptions)
-      .json({ accessToken, message: 'Acees Token Generated' });
+    res.cookie('accessToken', accessToken, {
+      httpOnly: true,
+      secure: false,
+      maxAge: 60 * 2,
+    });
 
-    console.log(err, decoded);
+    res.status(200).json({ accessToken, message: 'Acees Token Generated' });
   } catch (error) {
     next(error);
   }
@@ -213,7 +301,7 @@ exports.verifyMailController = async (req, res, next) => {
     }
     // updating the email verified
     let response = await createUserOrUpdate({ email_verified: true }, user);
-    res.status(200).json({ response, message: 'Acees Token Generated' });
+    res.status(200).json({ data: response, message: 'Acees Token Generated' });
   } catch (error) {
     next(error);
   }
@@ -269,7 +357,7 @@ exports.resetPasswordController = async (req, res, next) => {
       user
     );
 
-    res.status(200).json({
+    res.status(201).json({
       message: 'Password update success',
       data: updatedData,
     });
@@ -318,7 +406,6 @@ exports.sendOtpController = async (req, res, next) => {
     }
     const verificationOTP = await sendOTPVerification(phone);
 
-    console.log(verificationOTP, 'From 318');
     // Updating Refresh Token in the existing user model
     const updatedData = await createUserOrUpdate(
       {

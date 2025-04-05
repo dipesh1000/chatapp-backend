@@ -4,7 +4,6 @@ const ErrorHandler = require('../utils/errorHandler');
 
 exports.authenticatedRoutes = async (req, res, next) => {
   try {
-    console.log(req.path, 'req.path', req.path.startsWith('/reset-password'));
     let secretKey;
     let token;
     if (req.path.startsWith('/reset-password')) {
@@ -17,9 +16,12 @@ exports.authenticatedRoutes = async (req, res, next) => {
         req.header('Authorization')?.replace('Bearer ', '');
     }
     // extracting token
-
+    console.log(token, 'from token  in line 19', req.cookies?.accessToken);
     // if token is not there
     if (!token) {
+      res.status(401).json({
+        message: 'Token Not Found',
+      });
       throw new ErrorHandler('Token Not Found', 401);
     }
 
@@ -28,9 +30,9 @@ exports.authenticatedRoutes = async (req, res, next) => {
     // verify the incoming refresh token requred token and secret key
     const { err, decoded } = await generateDecodedToken(token, secretKey);
     if (err) {
-      throw new ErrorHandler('Token Invalid or Expire', 401);
+      throw new ErrorHandler('Token Invalid or Expire', 403);
     }
-    console.log(token, decoded, err, 'from middle');
+
     req.user = decoded.data;
     next();
   } catch (error) {

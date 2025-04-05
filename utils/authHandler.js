@@ -7,7 +7,8 @@ const generateTokens = async (user, secret) => {
     { data: { email: user?.email, id: user._id, role: user.role } },
     secret,
     {
-      expiresIn: 60 * 60,
+      // expiresIn: new Date(new Date().getTime() + 15 * 60 * 1000),
+      expiresIn: 60 * 2,
     }
   );
 
