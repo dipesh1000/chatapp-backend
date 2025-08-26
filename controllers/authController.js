@@ -82,19 +82,19 @@ exports.registerController = async (req, res, next) => {
     });
 
     // sending Mail
-    const verificationOTP = await sendVerificationMail(savedData);
+    // const verificationOTP = await sendVerificationMail(savedData);
 
     // Updating Otp in the existing user
-    const updatedData = await createUserOrUpdate(
-      {
-        otp: verificationOTP,
-      },
-      savedData
-    );
+    // const updatedData = await createUserOrUpdate(
+    //   {
+    //     otp: verificationOTP,
+    //   },
+    //   savedData
+    // );
 
     res.status(201).json({
       error: false,
-      data: updatedData,
+      data: savedData,
       message: 'User Register Successfully',
     });
   } catch (error) {

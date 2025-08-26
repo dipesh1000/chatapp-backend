@@ -1,6 +1,6 @@
 const { default: mongoose } = require('mongoose');
 
-let dbUrl = process.env.DB_URL || 'mongodb://localhost:27017/auth_project';
+let dbUrl = process.env.DB_URL || 'mongodb://localhost:27017/chat_apps';
 
 exports.dbConnect = async () => {
   return await mongoose
