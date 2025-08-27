@@ -6,10 +6,7 @@ const generateTokens = async (user, secret) => {
   let token = await jwt.sign(
     { data: { email: user?.email, id: user._id, role: user.role } },
     secret,
-    {
-      // expiresIn: new Date(new Date().getTime() + 15 * 60 * 1000),
-      expiresIn: 60 * 2,
-    }
+    { expiresIn: '15m' } // correct
   );
 
   let refreshToken = await jwt.sign(

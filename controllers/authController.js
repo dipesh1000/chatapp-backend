@@ -129,16 +129,17 @@ exports.loginController = async (req, res, next) => {
     res.cookie('accessToken', token, {
       httpOnly: true,
       secure: false,
-      expiresIn: new Date(new Date().getTime() + 15 * 60 * 1000),
       sameSite: 'Lax',
-      maxAge: 60 * 2,
+      path: '/',
+      maxAge: 15 * 60 * 1000,
     });
 
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
       secure: false,
       sameSite: 'Lax',
-      maxAge: 60 * 2,
+      path: '/',
+      maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
     res.status(201).json({

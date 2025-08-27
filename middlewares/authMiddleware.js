@@ -3,6 +3,7 @@ const { generateDecodedToken } = require('../utils/authHandler');
 const ErrorHandler = require('../utils/errorHandler');
 
 exports.authenticatedRoutes = async (req, res, next) => {
+  console.log(req.cookies.accessToken, '????????');
   try {
     let secretKey;
     let token;
@@ -28,7 +29,7 @@ exports.authenticatedRoutes = async (req, res, next) => {
     // Determine which API is being served
 
     // verify the incoming refresh token requred token and secret key
-    const { err, decoded } = await generateDecodedToken(token, secretKey);
+    const { err, decoded } = await generateDecodedToken(token, 'LOGIN_SECRET');
     if (err) {
       throw new ErrorHandler('Token Invalid or Expire', 403);
     }

@@ -6,8 +6,10 @@ module.exports = (io, socket) => {
   });
 
   // send a message
-  socket.on('message', async ({ roomId, userId, content, media }) => {
+  //{ roomId, userId, content, media }
+  socket.on('message', async (client) => {
     try {
+      console.log(client);
     } catch (error) {}
   });
 
@@ -17,7 +19,7 @@ module.exports = (io, socket) => {
   });
 
   // stop typing
-  socket.on(stopTyping, ({ roomId }) => {
+  socket.on('stopTyping', ({ roomId }) => {
     socket.to(roomId).emit('userStoppedTyping');
   });
 

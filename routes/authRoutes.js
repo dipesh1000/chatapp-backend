@@ -45,8 +45,8 @@ router.post('/user/profile', authenticatedRoutes, updateProfileController);
 router.post('/register', validateRegistrationRules, registerController);
 
 // Register API
-
-router.post('/login', loginLimiter, loginController);
+// loginLimiter
+router.post('/login', loginController);
 
 // Eamil Verication API
 router.post('/mail-verification', verifyMailController);
